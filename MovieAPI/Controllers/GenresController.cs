@@ -26,7 +26,7 @@ namespace MovieAPI.Controllers
         }
 
 
-        [HttpGet("{Id:int}")]
+        [HttpGet("{Id:int}", Name ="GetGenre")]
         public ActionResult<Genre> Get(int Id)
         {           
             var genre = _repo.GetGenre(Id);
@@ -40,7 +40,7 @@ namespace MovieAPI.Controllers
         [HttpPost]
         public ActionResult Post([FromBody]Genre genre)
         {
-            return NoContent();
+            return new CreatedAtRouteResult("GetGenre",new { Id = genre.Id},genre);
         }
 
         [HttpPut]
