@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MovieAPI.Models;
 using MovieAPI.Services;
 
@@ -12,24 +13,25 @@ namespace MovieAPI.Controllers
     [Route("api/genres")]
     public class GenresController : ControllerBase
     {
-        private readonly IRepositoryGenre _repo;
-        public GenresController(IRepositoryGenre repo)
+        private readonly ApplicationDbContext _db;
+
+        public GenresController(ApplicationDbContext db)
         {
-            _repo = repo;
+            _db = db;
         }
 
         [HttpGet]
-        public ActionResult<List<Genre>> Get()
+        public async Task<ActionResult<List<Genre>>> Get()
         {
 
-            return _repo.GetAllGenres();
+            return await _db.Genres.ToListAsync();
         }
 
 
         [HttpGet("{Id:int}", Name ="GetGenre")]
-        public ActionResult<Genre> Get(int Id)
-        {           
-            var genre = _repo.GetGenre(Id);
+        public async Task<ActionResult<Genre>> Get(int Id)
+        {
+            var genre = await _db.Genres.FirstOrDefaultAsync(g => g.Id == Id);
             if(genre == null)
             {
                 return NotFound();
@@ -38,8 +40,10 @@ namespace MovieAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromBody]Genre genre)
+        public async Task<ActionResult> Post([FromBody]Genre genre)
         {
+            _db.Add(genre);
+           await _db.SaveChangesAsync();
             return new CreatedAtRouteResult("GetGenre",new { Id = genre.Id},genre);
         }
 
